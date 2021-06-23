@@ -4,7 +4,8 @@ import time
 import traceback
 from discord_hooks import Webhook
 
-dis_url = 'https://discord.com/api/webhooks/757555905255440425/o7bCTtNznpo4tvrOnU04zXKcrcXU_iV0QTU_bFYgfZ6Cp6R1dNHQ4ngTc2Z8n00uzrpw'
+stardom_dis_url = 'https://discord.com/api/webhooks/744862500503420928/2BJl7dxcQKtSk7dK6tlHjtuHqEWQ9f9VDYndMLtrvT_XvgkJ3uVToT770QXWfjPb5TpG'
+test_dis_url = 'https://discord.com/api/webhooks/757555905255440425/o7bCTtNznpo4tvrOnU04zXKcrcXU_iV0QTU_bFYgfZ6Cp6R1dNHQ4ngTc2Z8n00uzrpw'
 json_url = 'https://api.nike.com/product_feed/threads/v2/?anchor=0&count=36&filter=marketplace(RU)&filter=language(ru)&filter=upcoming(true)&filter=channelId(010794e5-35fe-4e32-aaff-cd2c74f89d61)&filter=exclusiveAccess(true%2Cfalse)&sort=effectiveStartSellDateAsc&fields=active%2Cid%2ClastFetchTime%2CproductInfo%2CpublishedContent.nodes%2CpublishedContent.subType%2CpublishedContent.properties.coverCard%2CpublishedContent.properties.productCard%2CpublishedContent.properties.products%2CpublishedContent.properties.publish.collections%2CpublishedContent.properties.relatedThreads%2CpublishedContent.properties.seo%2CpublishedContent.properties.threadType%2CpublishedContent.properties.custom%2CpublishedContent.properties.title'
 user_agent = {
                                     'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/537.36'
@@ -13,13 +14,16 @@ user_agent = {
                                     'accept': '*/*',
                                     'sec-fetch-site': 'cross-site',
                                     'sec-fetch-mode': 'cors',
-                                    'accept-language': 'en-US'
+                                    'accept-language': 'en-US',
+                                    'X-B3-ParentSpanId':'4e8ff9bf134c67c4',
+                                    'X-B3-SpanId':'168fbad389c28342',
+                                    'X-B3-TraceId':'aade437bd0d8fc3d'
                                 }
 active_pairs = {}
 
 
 def disc_sent(cont, title, slug, price, method, launchtime, size, url_key, img):
-    dc = Webhook(dis_url, color=0x0a0a0a)
+    dc = Webhook(stardom_dis_url, color=0x0a0a0a)
     dc.add_field(name=cont,
                  value=f"[{title}](https://www.nike.com/ru/launch/t/{slug})")
     dc.add_field(name="Price", value=price)
@@ -58,8 +62,8 @@ def get_info(request):
 
 
 def main():
-    try:
-        request = json.loads(requests.get(json_url).text)
+        request = json.loads(requests.get(json_url, headers=user_agent).text)
+        print(request)
         filename = 'nike_monitor/nikeIds.txt'
         # CHECKING IDS IN TXT
         for i in range(len(request['objects'])):
@@ -92,8 +96,7 @@ def main():
                             url_key = stockx_search['Products'][0]['urlKey']
                             disc_sent("Stock changed", title, request['objects'][i]['publishedContent']['properties']['seo']['slug'], price, method, launchtime, size, url_key, img)
                             active_pairs[request['objects'][i]['productInfo'][j]['merchProduct']['id']] = size
-    except Exception:
-        print(traceback.format_exc())
+
 
 while True:
     main()
